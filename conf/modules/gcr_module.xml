@@ -1,0 +1,47 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="gcr" dir="guidance/gcr">
+  <doc>
+	  <description>Guidance algorithm for controlling the angular velocity around a fixed center of rotation for a fixed-wing, i.e., how many laps per second around a point. We are not controlling a circumference here as in the standard nav or gvf. The algorithm actuates over the bank angle in order to make the aircraft to rotate around a point. These points can be employed later for formation control tasks.
+    </description>
+  </doc>
+
+  <settings name="control">
+    <dl_settings>
+      <dl_settings NAME="GCR">
+         <dl_settings NAME="Control">
+           <dl_setting MAX="0.03" MIN="0.0" STEP="0.0005" VAR="gcr_control.gamma" shortname="gcr_g" param="GCR_GAMMA"/>
+           <dl_setting MAX="20" MIN="-20.0" STEP="0.5" VAR="gcr_control.wo" shortname="gcr_wo" param="GCR_WO"/>
+         </dl_settings>
+		 <dl_settings NAME="Formation">
+			<dl_setting MAX="500" MIN="-500" STEP="0.1" VAR="gcr_formation.nx" shortname="nx" param="GCR_NX"/>
+			<dl_setting MAX="500" MIN="-500" STEP="0.1" VAR="gcr_formation.ny" shortname="ny" param="GCR_NY"/>
+			<dl_setting MAX="50" MIN="0" STEP="0.1" VAR="gcr_formation.ns" shortname="ns" param="GCR_NS"/>
+			<dl_setting MAX="3.1416" MIN="-3.1416" STEP="0.0002" VAR="gcr_formation.nc" shortname="nc" param="GCR_NC"/>
+			<dl_setting MAX="80" MIN="0" STEP="0.5" VAR="gcr_formation.dh" shortname="dh" param="GCR_DH"/>
+			<dl_setting MAX="80" MIN="0" STEP="0.5" VAR="gcr_formation.dn" shortname="dn" param="GCR_DC"/>
+		 </dl_settings>
+       </dl_settings>
+     </dl_settings>
+   </settings>
+
+   <header>
+     <file name="gcr.h"/>
+   </header>
+
+   <init fun = "gcr_init()"/>
+
+   <makefile firmware="fixedwing">
+     <define name="GCR_GAMMA" value="1"/>
+     <define name="GCR_WO" value="10"/>
+     <define name="GCR_NX" value="10"/>
+     <define name="GCR_NY" value="10"/>
+     <define name="GCR_NS" value="1"/>
+     <define name="GCR_NC" value="0"/>
+     <define name="GCR_DH" value="10"/>
+     <define name="GCR_DN" value="10"/>
+     <file name="gcr.c"/>
+   </makefile>
+
+</module>
+
