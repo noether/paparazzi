@@ -20,6 +20,7 @@ class rotorcraft:
     def __init__(self, ac_id):
         self.id = ac_id
         self.X = np.array([-999, -999, -999])
+        self.timeout = 0
 
 list_ids = []
 list_rotorcrafts = []
@@ -33,6 +34,7 @@ def message_recv(ac_id, msg):
             rc.X[0] = float(msg.get_field(0))*0.0039063
             rc.X[1] = float(msg.get_field(1))*0.0039063
             rc.X[2] = float(msg.get_field(2))*0.0039063
+            rc.timeout = 0
 
     return
 
@@ -112,6 +114,10 @@ def main():
     try:
         while True:
             time.sleep(0.02)
+            
+            for rc in list_rotorcrafts:
+                rc.timeout = rc.timeout + 0.02
+
             formation(Bb, d, k)
 
     except KeyboardInterrupt:
