@@ -23,6 +23,7 @@
    <init fun = "fc_rotor_init()"/>
 
    <makefile firmware="rotorcraft">
+	 <define name="FC_ROTOR"/>
      <file name="fc_rotor.c"/>
    </makefile>
 

@@ -25,11 +25,14 @@
  *  Formation control algorithm for rotorcrafts
  */
 
+#include <std.h>
+
 #ifndef FC_ROTOR_H
 #define FC_ROTOR_H
 
 extern int fc_rotor_on;
 
 extern void fc_rotor_init(void);
+extern void fc_read_msg(uint8_t av, float ux, float uy, float uz);
 
 #endif // FC_ROTOR_H

@@ -28,3 +28,10 @@ void fc_rotor_init(void)
 {
     fc_rotor_on = 0;
 }
+
+void fc_read_msg(uint8_t av, float ux, float uy, float uz)
+{
+    if(av == 0);
+    else if(av == 1);
+}
+
