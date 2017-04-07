@@ -347,5 +347,11 @@
 #define RANGE_FORCEFIELD_ID 1
 #endif
 
+/*
+ * IDs of ACCEL_SP senders (message 21)
+ */
+#ifndef ACCEL_SP_ID
+#define ACCEL_SP_ID 1
+#endif
 
 #endif /* ABI_SENDER_IDS_H */

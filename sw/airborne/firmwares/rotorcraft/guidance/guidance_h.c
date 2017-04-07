@@ -197,6 +197,9 @@ void guidance_h_init(void)
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_ROTORCRAFT_TUNE_HOVER, send_tune_hover);
 #endif
 
+#if GUIDANCE_INDI
+  guidance_indi_init();
+#endif
 }
 
 

@@ -61,6 +61,11 @@ float guidance_indi_speed_gain = GUIDANCE_INDI_SPEED_GAIN;
 float guidance_indi_speed_gain = 1.8;
 #endif
 
+abi_event accel_sp_ev;
+static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp);
+struct FloatVect3 *indi_accel_sp;
+bool indi_accel_sp_set = false;
+
 struct FloatVect3 sp_accel = {0.0,0.0,0.0};
 #ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
 float thrust_in_specific_force_gain = GUIDANCE_INDI_SPECIFIC_FORCE_GAIN;
@@ -96,11 +101,21 @@ struct FloatVect3 euler_cmd;
 
 float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
 
+float time_of_accel_sp = 0.0;
+
 struct FloatEulers guidance_euler_cmd;
 float thrust_in;
 
 static void guidance_indi_propagate_filters(void);
 static void guidance_indi_calcG(struct FloatMat33 *Gmat);
+
+/**
+ * @brief Init function
+ */
+void guidance_indi_init(void)
+{
+  AbiBindMsgACCEL_SP(ACCEL_SP_ID, &accel_sp_ev, accel_sp_cb);
+}
 
 /**
  *
@@ -140,9 +155,21 @@ void guidance_indi_run(bool in_flight, float heading_sp) {
   float speed_sp_y = pos_y_err * guidance_indi_pos_gain;
   float speed_sp_z = pos_z_err * guidance_indi_pos_gain;
 
-  sp_accel.x = (speed_sp_x - stateGetSpeedNed_f()->x) * guidance_indi_speed_gain;
-  sp_accel.y = (speed_sp_y - stateGetSpeedNed_f()->y) * guidance_indi_speed_gain;
-  sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
+  // If the acceleration setpoint is set over telemetry, use that
+  if(indi_accel_sp_set) {
+    sp_accel.x = indi_accel_sp->x;
+    sp_accel.y = indi_accel_sp->y;
+    sp_accel.z = indi_accel_sp->z;
+    float dt = get_sys_time_float() - time_of_accel_sp;
+    if(dt > 0.5)
+    {
+      indi_accel_sp_set = false;
+    }
+  } else {
+    sp_accel.x = (speed_sp_x - stateGetSpeedNed_f()->x) * guidance_indi_speed_gain;
+    sp_accel.y = (speed_sp_y - stateGetSpeedNed_f()->y) * guidance_indi_speed_gain;
+    sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
+  }
 
 #if GUIDANCE_INDI_RC_DEBUG
 #warning "GUIDANCE_INDI_RC_DEBUG lets you control the accelerations via RC, but disables autonomous flight!"
@@ -314,4 +341,14 @@ void stabilization_attitude_set_setpoint_rp_quat_f(struct FloatEulers* indi_rp_c
   }
 
   QUAT_BFP_OF_REAL(stab_att_sp_quat,q_sp);
+}
+
+/**
+ * ABI callback that obtains the acceleration setpoint from telemetry
+ */
+static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp)
+{
+  indi_accel_sp = accel_sp;
+  indi_accel_sp_set = true;
+  time_of_accel_sp = get_sys_time_float();
 }
