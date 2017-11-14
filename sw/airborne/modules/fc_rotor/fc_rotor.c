@@ -25,7 +25,14 @@
 #include "subsystems/datalink/datalink.h" // dl_buffer
 #include "autopilot.h"
 #include "modules/fc_rotor/fc_rotor.h"
-#define SENDER_ID 66
+
+#ifndef FC_ROTOR_ID
+#define FC_ROTOR_ID 66
+#endif
+
+#ifndef ABI_C
+#define ABI_C 1
+#endif
 
 int fc_rotor_on;
 
