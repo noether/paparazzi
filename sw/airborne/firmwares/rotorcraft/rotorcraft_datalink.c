@@ -83,14 +83,6 @@ void firmware_parse_msg(struct link_device *dev __attribute__((unused)), struct 
       break;
 #endif
 
-#ifdef FC_ROTOR
-    case DL_FC_ROTOR:
-      if (DL_GUIDED_SETPOINT_NED_ac_id(buf) != AC_ID) { break; }
-      fc_read_msg(DL_FC_ROTOR_av(buf), DL_FC_ROTOR_ux(buf), DL_FC_ROTOR_uy(buf), DL_FC_ROTOR_uz(buf));
-      break;
-#endif // FC_ROTOR
-
-
     default:
       break;
   }

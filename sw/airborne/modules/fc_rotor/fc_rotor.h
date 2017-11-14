@@ -33,6 +33,6 @@
 extern int fc_rotor_on;
 
 extern void fc_rotor_init(void);
-extern void fc_read_msg(uint8_t av, float ux, float uy, float uz);
+extern void fc_read_msg(void);
 
 #endif // FC_ROTOR_H

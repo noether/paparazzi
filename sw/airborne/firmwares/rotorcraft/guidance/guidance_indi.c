@@ -26,6 +26,7 @@
  * Come to IROS2016 to learn more!
  *
  */
+#include <stdio.h>
 
 #include "generated/airframe.h"
 #include "firmwares/rotorcraft/guidance/guidance_indi.h"
@@ -159,7 +160,9 @@ void guidance_indi_run(bool in_flight, float heading_sp) {
   if(indi_accel_sp_set) {
     sp_accel.x = indi_accel_sp->x;
     sp_accel.y = indi_accel_sp->y;
-    sp_accel.z = indi_accel_sp->z;
+    //TODO Now we only care about 2D formations
+    sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
+    //sp_accel.z = indi_accel_sp->z;
     float dt = get_sys_time_float() - time_of_accel_sp;
     if(dt > 0.5)
     {
@@ -348,6 +351,7 @@ void stabilization_attitude_set_setpoint_rp_quat_f(struct FloatEulers* indi_rp_c
  */
 static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp)
 {
+  printf("ABI MSG received %i", AC_ID);
   indi_accel_sp = accel_sp;
   indi_accel_sp_set = true;
   time_of_accel_sp = get_sys_time_float();
