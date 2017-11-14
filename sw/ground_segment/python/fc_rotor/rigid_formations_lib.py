@@ -46,7 +46,9 @@ def make_Dzt(Z, m, l):
 
     Zt = np.zeros(edges)
     for i in range(0, edges):
-        Zt[i] = (la.norm(Z[(i*m):(i*m+m)]))**(l-2)
+        norm = la.norm(Z[(i*m):(i*m+m)])
+        if norm > 0.01:
+            Zt[i] = (norm)**(l-2)
     
     return np.diag(Zt)
 

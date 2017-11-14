@@ -22,13 +22,10 @@
 #include <stdio.h>
 #include "math/pprz_algebra_float.h"
 #include "subsystems/abi.h"
+#include "subsystems/abi_sender_ids.h"
 #include "subsystems/datalink/datalink.h" // dl_buffer
 #include "autopilot.h"
 #include "modules/fc_rotor/fc_rotor.h"
-
-#ifndef FC_ROTOR_ID
-#define FC_ROTOR_ID 66
-#endif
 
 #ifndef ABI_C
 #define ABI_C 1
@@ -47,7 +44,6 @@ void fc_read_msg(void)
     uint8_t ac_id = DL_FC_ROTOR_ac_id(dl_buffer);
 
     if (ac_id == AC_ID) {
-      printf("Msg received\n");
       uint8_t av = DL_FC_ROTOR_av(dl_buffer);
 
       u.x = DL_FC_ROTOR_ux(dl_buffer);
@@ -60,7 +56,7 @@ void fc_read_msg(void)
       else if(av == 1)
       {
         printf("U %i %i %f \n", AC_ID, av, u.x);
-        AbiSendMsgACCEL_SP(FC_ROTOR_ID, &u);
+        AbiSendMsgACCEL_SP(ACCEL_SP_ID, &u);
       }
     }
 }

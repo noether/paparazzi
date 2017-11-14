@@ -95,7 +95,7 @@ def formation(Bb, d, k, aorv):
 
         interface.send(msg)
 
-        i = i + 1
+        i = i+2
     return
 
 def main():
