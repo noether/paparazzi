@@ -60,7 +60,7 @@ void fc_read_msg(void)
       else if(av == 1)
       {
         printf("U %i %i %f \n", AC_ID, av, u.x);
-        AbiSendMsgACCEL_SP(SENDER_ID, &u);
+        AbiSendMsgACCEL_SP(FC_ROTOR_ID, &u);
       }
     }
 }
