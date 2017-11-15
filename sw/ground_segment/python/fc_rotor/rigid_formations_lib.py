@@ -70,8 +70,11 @@ def make_DPzh(Z, m):
 def make_E(Z, d, m, l):
     edges = Z.size/m
     E = np.zeros(edges)
-    for i in range(0, edges):
-        E[i] = (la.norm(Z[(i*m):(i*m+m)]))**l - d[i]**l
+    if edges == 1:
+        E[0] =  la.norm(Z)**l - d**l
+    else:
+        for i in range(0, edges):
+            E[i] = (la.norm(Z[(i*m):(i*m+m)]))**l - d[i]**l
 
     return E
 

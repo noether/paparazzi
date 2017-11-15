@@ -19,8 +19,8 @@ from scipy import linalg as la
 class rotorcraft:
     def __init__(self, ac_id):
         self.id = ac_id
-        self.X = np.array([-999, -999, -999])
-        self.V = np.array([-999, -999, -999])
+        self.X = np.array([-999.0, -999.0, -999.0])
+        self.V = np.array([-999.0, -999.0, -999.0])
         self.timeout = 0
 
 list_ids = []
@@ -80,7 +80,9 @@ def formation(Bb, d, k, aorv):
     elif aorv == 1:
         U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E)
 
-        print "Acceleration command: " + str(U).replace('[','').replace(']','')
+        #print "Positions: " + str(X).replace('[','').replace(']','')
+        #print "Velocities: " + str(V).replace('[','').replace(']','')
+        #print "Acceleration command: " + str(U).replace('[','').replace(']','')
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
 
@@ -109,6 +111,9 @@ def main():
     ids = np.loadtxt(sys.argv[3])
     aorv = int(sys.argv[4])
     k = np.loadtxt(sys.argv[5])
+
+    if B.size == 2:
+        B.shape = (2,1)
 
     Bb = la.kron(B, np.eye(2))
 

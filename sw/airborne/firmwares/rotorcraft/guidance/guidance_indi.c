@@ -62,7 +62,7 @@ float guidance_indi_speed_gain = 1.8;
 
 abi_event accel_sp_ev;
 static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp);
-struct FloatVect3 *indi_accel_sp;
+struct FloatVect3 indi_accel_sp = {0.0,0.0,0.0};
 bool indi_accel_sp_set = false;
 
 struct FloatVect3 sp_accel = {0.0,0.0,0.0};
@@ -156,8 +156,8 @@ void guidance_indi_run(bool in_flight, float heading_sp) {
 
   // If the acceleration setpoint is set over telemetry, use that
   if(indi_accel_sp_set) {
-    sp_accel.x = indi_accel_sp->x;
-    sp_accel.y = indi_accel_sp->y;
+    sp_accel.x = indi_accel_sp.x;
+    sp_accel.y = indi_accel_sp.y;
     //TODO Now we only care about 2D formations
     sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
     //sp_accel.z = indi_accel_sp->z;
@@ -349,7 +349,9 @@ void stabilization_attitude_set_setpoint_rp_quat_f(struct FloatEulers* indi_rp_c
  */
 static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp)
 {
-  indi_accel_sp = accel_sp;
+  indi_accel_sp.x = accel_sp->x;
+  indi_accel_sp.y = accel_sp->y;
+  indi_accel_sp.z = accel_sp->z;
   indi_accel_sp_set = true;
   time_of_accel_sp = get_sys_time_float();
 }

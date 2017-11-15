@@ -19,7 +19,6 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
 #include "math/pprz_algebra_float.h"
 #include "subsystems/abi.h"
 #include "subsystems/abi_sender_ids.h"
@@ -48,14 +47,12 @@ void fc_read_msg(void)
 
       u.x = DL_FC_ROTOR_ux(dl_buffer);
       u.y = DL_FC_ROTOR_uy(dl_buffer);
-      u.z = DL_FC_ROTOR_uz(dl_buffer);
-
+      u.z = -DL_FC_ROTOR_uz(dl_buffer);
 
       if(av == 0)
         return;
       else if(av == 1)
       {
-        printf("U %i %i %f \n", AC_ID, av, u.x);
         AbiSendMsgACCEL_SP(ACCEL_SP_ID, &u);
       }
     }
