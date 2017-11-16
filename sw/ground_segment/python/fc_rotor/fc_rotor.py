@@ -48,7 +48,7 @@ def get_joy_axis(joystick):
    y = joystick.get_axis(3)
    return x, y
 
-def formation(Bb, d, k, aorv):
+def formation(Bb, d, mus, k, aorv):
     no_ins_msg = 0
     for rc in list_rotorcrafts:
         if rc.X[0] == -999:
@@ -68,29 +68,57 @@ def formation(Bb, d, k, aorv):
         X[i+1] = rc.X[1]
         V[i] = rc.V[0]
         V[i+1] = rc.V[1]
-        i = i+2
-    
+
     # Computation of useful matrices
     Z = Bb.T.dot(X)
     Dz = rf.make_Dz(Z, 2)
     Dzt = rf.make_Dzt(Z, 2, 1)
     E = rf.make_E(Z, d, 2, 1)
 
-    # Shape control
-    if aorv == 0:
-        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E)
+    # Shape and motion control
+    mu_t = mus[:,0]
+    tilde_mu_t = mus[:,1]
+    mu_r = mus[:,2]
+    tilde_mu_r = mus[:,3]
 
-        print "Velocity command: " + str(U).replace('[','').replace(']','')
+    if joystick_present == 1:
+       for e in pygame.event.get():
+          translation, rotation = get_joy_axis(stick)
+          if translation < 0.3 and translation > -0.3:
+              translation = 0
+          if rotation < 0.3 and rotation > -0.3:
+              rotation = 0
+
+          mu_t = translation*mu
+          tilde_mu_t = translation*mu
+          mu_r = rotation*mu
+          rotation_mu_t = rotation*mu
+
+    Avt = rf.make_Av(B, mu_t, tilde_mu_t)
+    Aat = rf.make_Aa(B, mu_t, tilde_mu_t)
+    Avtb = la.kron(Av, np.eye(m))
+    Aatb = la.kron(Aa, np.eye(m))
+
+    Avr = rf.make_Av(B, mu_r, tilde_mu_r)
+    Aar = rf.make_Aa(B, mu_r, tilde_mu_r)
+    Avrb = la.kron(Av, np.eye(m))
+    Aarb = la.kron(Aa, np.eye(m))
+
+    Av = Avt + Avr
+    Aa = Aat + Aar
+
+    if aorv == 0:
+        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Z)
+
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     elif aorv == 1:
-        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E)
+        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Z) + Aab.dot(Z)
 
         #print "Positions: " + str(X).replace('[','').replace(']','')
         #print "Velocities: " + str(V).replace('[','').replace(']','')
         #print "Acceleration command: " + str(U).replace('[','').replace(']','')
         print "Error distances: " + str(E).replace('[','').replace(']','')
-
 
     i = 0
     for ac in list_rotorcrafts:
@@ -107,17 +135,18 @@ def formation(Bb, d, k, aorv):
     return
 
 def main():
-    if len(sys.argv) != 7:
-        print "Usage: fc_rotor topology.txt desired_distances.txt ids.txt gains.txt a/v(1/0) joystick(1/0)"
+    if len(sys.argv) != 8:
+        print "Usage: fc_rotor ids.txt topology.txt desired_distances.txt motion_parameters.txt gains.txt a/v(1/0) joystick(1/0)"
         interface.shutdown()
         return
 
-    B = np.loadtxt(sys.argv[1])
-    d = np.loadtxt(sys.argv[2])
-    ids = np.loadtxt(sys.argv[3])
+    ids = np.loadtxt(sys.argv[1])
+    B = np.loadtxt(sys.argv[2])
+    d = np.loadtxt(sys.argv[3])
     k = np.loadtxt(sys.argv[4])
-    aorv = int(sys.argv[5])
-    joystick_present = int(sys.argv[6])
+    mus = np.loadtxt(sys.argv[5])
+    aorv = int(sys.argv[6])
+    joystick_present = int(sys.argv[7])
 
     if B.size == 2:
         B.shape = (2,1)
@@ -155,12 +184,10 @@ def main():
             for rc in list_rotorcrafts:
                 rc.timeout = rc.timeout + 0.02
 
-            formation(Bb, d, k, aorv)
+            formation(Bb, d, mus, k, aorv)
 
             if joystick_present == 1:
-                for e in pygame.event.get():
-                    x, y = get_joy_axis(stick)
-                    print x, y
+
 
     except KeyboardInterrupt:
         interface.shutdown()
