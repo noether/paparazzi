@@ -118,7 +118,7 @@ def formation(Bb, d, mus, k, aorv):
 
         #print "Positions: " + str(X).replace('[','').replace(']','')
         #print "Velocities: " + str(V).replace('[','').replace(']','')
-        #print "Acceleration command: " + str(U).replace('[','').replace(']','')
+        print "Acceleration command: " + str(U).replace('[','').replace(']','')
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     i = 0
@@ -144,8 +144,8 @@ def main():
     ids = np.loadtxt(sys.argv[1])
     B = np.loadtxt(sys.argv[2])
     d = np.loadtxt(sys.argv[3])
-    k = np.loadtxt(sys.argv[4])
-    mus = np.loadtxt(sys.argv[5])
+    mus = np.loadtxt(sys.argv[4])
+    k = np.loadtxt(sys.argv[5])
     aorv = int(sys.argv[6])
     joystick_present = int(sys.argv[7])
 
@@ -159,11 +159,19 @@ def main():
     map(int, list_ids)
 
     if np.size(ids) != np.size(B,0):
-        print "The number of rotorcrafts in the topology and ids do not match"
+        print("The number of rotorcrafts in the topology and ids do not match")
         return
 
     if np.size(d) != np.size(B,1):
-        print "The number of links in the topology and desired distances do not match"
+        print("The number of links in the topology and desired distances do not match")
+        return
+
+    if np.size(d) != np.size(mus,1):
+        print("The number of (columns) motion parameters and relative vectors do not match")
+        return
+
+    if 4 != np.size(mus,0):
+        print("The number of (rows) motion parameters must be four")
         return
 
     for i in range(0, len(ids)):
@@ -187,9 +195,6 @@ def main():
 
             formation(Bb, d, mus, k, aorv)
 
-            if joystick_present == 1:
-
-
     except KeyboardInterrupt:
         interface.shutdown()
         pygame.quit()
@@ -197,3 +202,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    interface.shutdown()
+    pygame.quit()
