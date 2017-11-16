@@ -147,7 +147,6 @@ def main():
         pygame.init()
         stick = pygame.joystick.Joystick(0)
         stick.init()
-        clock = pygame.time.Clock()
 
     try:
         while True:
@@ -162,7 +161,6 @@ def main():
                 for e in pygame.event.get():
                     x, y = get_joy_axis(stick)
                     print x, y
-                clock.tick(20)
 
     except KeyboardInterrupt:
         interface.shutdown()
