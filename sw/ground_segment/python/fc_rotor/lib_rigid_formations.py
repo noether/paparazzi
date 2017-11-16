@@ -78,14 +78,20 @@ def make_E(Z, d, m, l):
 
     return E
 
-def make_A(B, mu, tilde_mu):
+def make_Av(B, mu, tilde_mu):
     agents, edges = B.shape
-    A = np.zeros(B.shape)
+    Av = np.zeros(B.shape)
     for i in range(0, agents):
         for j in range(0, edges):
             if B[i,j] == 1:
-                A[i,j] = mu[j]
+                Av[i,j] = mu[j]
             elif B[i,j] == -1:
-                A[i,j] = tilde_mu[j]
+                Av[i,j] = tilde_mu[j]
 
-    return A
+    return Av
+
+def make_Aa(B, mu, tilde_mu):
+    Av = make_Av(B, mu, tilde_mu)
+    Aa = Av.dot(B.T).dot(Av)
+
+    return Aa

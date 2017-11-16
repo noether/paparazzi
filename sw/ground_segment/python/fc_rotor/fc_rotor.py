@@ -14,7 +14,7 @@ from pprzlink.ivy import IvyMessagesInterface
 from pprzlink.message import PprzMessage 
 from settings_xml_parse import PaparazziACSettings
 
-import rigid_formations_lib as rf
+import lib_rigid_formations as rf
 from scipy import linalg as la
 
 class rotorcraft:
