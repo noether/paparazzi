@@ -73,6 +73,7 @@ def formation(Bb, d, mus, k, aorv):
     Z = Bb.T.dot(X)
     Dz = rf.make_Dz(Z, 2)
     Dzt = rf.make_Dzt(Z, 2, 1)
+    Zt = np.diag(make_Dzt(Z, m, 1))
     E = rf.make_E(Z, d, 2, 1)
 
     # Shape and motion control
@@ -108,12 +109,12 @@ def formation(Bb, d, mus, k, aorv):
     Aa = Aat + Aar
 
     if aorv == 0:
-        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Z)
+        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Zt)
 
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     elif aorv == 1:
-        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Z) + Aab.dot(Z)
+        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zt) + Aab.dot(Zt)
 
         #print "Positions: " + str(X).replace('[','').replace(']','')
         #print "Velocities: " + str(V).replace('[','').replace(']','')
