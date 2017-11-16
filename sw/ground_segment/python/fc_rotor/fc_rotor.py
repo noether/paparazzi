@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pygame
 import time
 import sys
 import wx
@@ -41,6 +42,11 @@ def message_recv(ac_id, msg):
             rc.timeout = 0
 
     return
+
+def get_joy_axis(joystick):
+   x = joystick.get_axis(1)
+   y = joystick.get_axis(3)
+   return x, y
 
 def formation(Bb, d, k, aorv):
     no_ins_msg = 0
@@ -101,16 +107,17 @@ def formation(Bb, d, k, aorv):
     return
 
 def main():
-    if len(sys.argv) != 6:
-        print "Usage: fc_rotor topology.txt desired_distances.txt ids.txt a/v(1/0) gains.txt"
+    if len(sys.argv) != 7:
+        print "Usage: fc_rotor topology.txt desired_distances.txt ids.txt gains.txt a/v(1/0) joystick(1/0)"
         interface.shutdown()
         return
 
     B = np.loadtxt(sys.argv[1])
     d = np.loadtxt(sys.argv[2])
     ids = np.loadtxt(sys.argv[3])
-    aorv = int(sys.argv[4])
-    k = np.loadtxt(sys.argv[5])
+    k = np.loadtxt(sys.argv[4])
+    aorv = int(sys.argv[5])
+    joystick_present = int(sys.argv[6])
 
     if B.size == 2:
         B.shape = (2,1)
@@ -135,17 +142,31 @@ def main():
     # Ivy
     interface.subscribe(message_recv)
 
+    # Joystick
+    if joystick_present == 1:
+        pygame.init()
+        stick = pygame.joystick.Joystick(0)
+        stick.init()
+        clock = pygame.time.Clock()
+
     try:
         while True:
             time.sleep(0.02)
-            
+
             for rc in list_rotorcrafts:
                 rc.timeout = rc.timeout + 0.02
 
             formation(Bb, d, k, aorv)
 
+            if joystick_present == 1:
+                for e in pygame.event.get():
+                    x, y = get_joy_axis(stick)
+                    print x, y
+                clock.tick(20)
+
     except KeyboardInterrupt:
         interface.shutdown()
+        pygame.quit()
 
 
 if __name__ == '__main__':
