@@ -28,6 +28,10 @@ list_ids = []
 list_rotorcrafts = []
 interface = IvyMessagesInterface("Formation Control Rotorcrafts")
 
+# Joystick
+translation = 0
+rotation = 0
+
 def message_recv(ac_id, msg):
     if ac_id in list_ids:
         rc = list_rotorcrafts[list_ids.index(ac_id)]
@@ -40,7 +44,6 @@ def message_recv(ac_id, msg):
             rc.V[1] = float(msg.get_field(4))*0.0000019
             rc.V[2] = float(msg.get_field(5))*0.0000019
             rc.timeout = 0
-
     return
 
 def get_joy_axis(joystick):
@@ -48,14 +51,17 @@ def get_joy_axis(joystick):
    y = joystick.get_axis(3)
    return x, y
 
-def formation(Bb, d, mus, k, aorv):
+def formation(B, d, mus, k, aorv, joystick_present):
     no_ins_msg = 0
     for rc in list_rotorcrafts:
-        if rc.X[0] == -999:
-            print "Waiting for INS msg of rotorcraft ", rc.id
+        if rc.X[0] == -999.0:
+            print("Waiting for INS msg of rotorcraft ", rc.id)
             no_ins_msg = 1
+        if rc.timeout > 0.2:
+            print("The INS msg of rotorcraft ", rc.id, " stopped")
+            return
 
-    if no_ins_msg:
+    if no_ins_msg == 1:
         return
 
     X = np.zeros(2*len(list_rotorcrafts))
@@ -68,20 +74,24 @@ def formation(Bb, d, mus, k, aorv):
         X[i+1] = rc.X[1]
         V[i] = rc.V[0]
         V[i+1] = rc.V[1]
+        i = i + 2
 
     # Computation of useful matrices
+    Bb = la.kron(B, np.eye(2))
     Z = Bb.T.dot(X)
     Dz = rf.make_Dz(Z, 2)
     Dzt = rf.make_Dzt(Z, 2, 1)
-    Zt = np.diag(make_Dzt(Z, m, 1))
+    Zh = rf.make_Zh(Z, 2)
     E = rf.make_E(Z, d, 2, 1)
 
     # Shape and motion control
-    mu_t = mus[:,0]
-    tilde_mu_t = mus[:,1]
-    mu_r = mus[:,2]
-    tilde_mu_r = mus[:,3]
+    mu_t = mus[0,:]
+    tilde_mu_t = mus[1,:]
+    mu_r = mus[2,:]
+    tilde_mu_r = mus[3,:]
 
+    global translation
+    global rotation
     if joystick_present == 1:
        for e in pygame.event.get():
           translation, rotation = get_joy_axis(stick)
@@ -90,35 +100,35 @@ def formation(Bb, d, mus, k, aorv):
           if rotation < 0.3 and rotation > -0.3:
               rotation = 0
 
-          mu_t = translation*mu
-          tilde_mu_t = translation*mu
-          mu_r = rotation*mu
-          rotation_mu_t = rotation*mu
+    jmu_t = translation*mu_t
+    jtilde_mu_t = translation*mu_t
+    jmu_r = rotation*mu_r
+    jtilde_mu_r = rotation*mu_r
 
-    Avt = rf.make_Av(B, mu_t, tilde_mu_t)
-    Aat = rf.make_Aa(B, mu_t, tilde_mu_t)
-    Avtb = la.kron(Av, np.eye(m))
-    Aatb = la.kron(Aa, np.eye(m))
+    Avt = rf.make_Av(B, jmu_t, jtilde_mu_t)
+    Aat = rf.make_Aa(B, jmu_t, jtilde_mu_t)
+    Avtb = la.kron(Avt, np.eye(2))
+    Aatb = la.kron(Aat, np.eye(2))
 
-    Avr = rf.make_Av(B, mu_r, tilde_mu_r)
-    Aar = rf.make_Aa(B, mu_r, tilde_mu_r)
-    Avrb = la.kron(Av, np.eye(m))
-    Aarb = la.kron(Aa, np.eye(m))
+    Avr = rf.make_Av(B, jmu_r, jtilde_mu_r)
+    Aar = rf.make_Aa(B, jmu_r, jtilde_mu_r)
+    Avrb = la.kron(Avr, np.eye(2))
+    Aarb = la.kron(Aar, np.eye(2))
 
-    Av = Avt + Avr
-    Aa = Aat + Aar
+    Avb = Avtb + Avrb
+    Aab = Aatb + Aarb
 
     if aorv == 0:
-        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Zt)
+        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Zh)
 
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     elif aorv == 1:
-        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zt) + Aab.dot(Zt)
+        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + k[0]*Aab.dot(Zh)
 
         #print "Positions: " + str(X).replace('[','').replace(']','')
         #print "Velocities: " + str(V).replace('[','').replace(']','')
-        print "Acceleration command: " + str(U).replace('[','').replace(']','')
+        #print "Acceleration command: " + str(U).replace('[','').replace(']','')
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     i = 0
@@ -152,8 +162,6 @@ def main():
     if B.size == 2:
         B.shape = (2,1)
 
-    Bb = la.kron(B, np.eye(2))
-
     global list_ids
     list_ids = np.ndarray.tolist(ids)
     map(int, list_ids)
@@ -181,6 +189,7 @@ def main():
     interface.subscribe(message_recv)
 
     # Joystick
+    global stick
     if joystick_present == 1:
         pygame.init()
         stick = pygame.joystick.Joystick(0)
@@ -193,7 +202,7 @@ def main():
             for rc in list_rotorcrafts:
                 rc.timeout = rc.timeout + 0.02
 
-            formation(Bb, d, mus, k, aorv)
+            formation(B, d, mus, k, aorv, joystick_present)
 
     except KeyboardInterrupt:
         interface.shutdown()

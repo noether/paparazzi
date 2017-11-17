@@ -27,6 +27,16 @@ def make_Bd(B):
 
     return Bd
 
+def make_Zh(Z, m):
+    edges = Z.size/m
+    Zh = np.zeros(Z.size)
+
+    for i in range(0, edges):
+        norm = la.norm(Z[(i*m):(i*m+m)])
+        Zh[(i*m):(i*m+m)] = Z[(i*m):(i*m+m)]/norm
+
+    return Zh
+
 def make_Dz(Z, m):
     edges = Z.size/m
     Dz = np.zeros((Z.size, edges))
