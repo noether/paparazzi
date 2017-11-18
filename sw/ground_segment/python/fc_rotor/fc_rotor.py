@@ -81,6 +81,7 @@ def formation(B, d, mus, k, aorv, joystick_present):
     Z = Bb.T.dot(X)
     Dz = rf.make_Dz(Z, 2)
     Dzt = rf.make_Dzt(Z, 2, 1)
+    Dztstar = rf.make_Dztstar(d, 2, 1)
     Zh = rf.make_Zh(Z, 2)
     E = rf.make_E(Z, d, 2, 1)
 
@@ -106,17 +107,12 @@ def formation(B, d, mus, k, aorv, joystick_present):
     jtilde_mu_r = rotation*mu_r
 
     Avt = rf.make_Av(B, jmu_t, jtilde_mu_t)
-    Aat = rf.make_Aa(B, jmu_t, jtilde_mu_t)
     Avtb = la.kron(Avt, np.eye(2))
-    Aatb = la.kron(Aat, np.eye(2))
 
     Avr = rf.make_Av(B, jmu_r, jtilde_mu_r)
-    Aar = rf.make_Aa(B, jmu_r, jtilde_mu_r)
     Avrb = la.kron(Avr, np.eye(2))
-    Aarb = la.kron(Aar, np.eye(2))
 
     Avb = Avtb + Avrb
-    Aab = Aatb + Aarb
 
     if aorv == 0:
         U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Zh)
@@ -124,7 +120,7 @@ def formation(B, d, mus, k, aorv, joystick_present):
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     elif aorv == 1:
-        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + k[0]*Aab.dot(Zh)
+        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + la.kron(Av.dot(Dztstar).dot(B.T).dot(Av), np.eye(2)).dot(Zh)
 
         #print "Positions: " + str(X).replace('[','').replace(']','')
         #print "Velocities: " + str(V).replace('[','').replace(']','')

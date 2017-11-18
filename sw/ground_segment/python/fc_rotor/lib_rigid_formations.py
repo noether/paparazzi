@@ -62,6 +62,17 @@ def make_Dzt(Z, m, l):
     
     return np.diag(Zt)
 
+def make_Dztstar(d, m, l):
+    edges = d.size
+    if l == 2:
+        return np.eyes(edges)
+    
+    Ztstar = np.zeros(edges)
+    for i in range(0, edges):
+        Ztstar[i] = d[i]**(l-2)
+
+    return np.diag(Ztstar)
+
 def make_DPzh(Z, m):
     edges = Z.size/m
     DPzh = np.zeros((2*edges, 2*edges))
