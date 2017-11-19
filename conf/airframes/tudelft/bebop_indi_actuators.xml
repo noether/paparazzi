@@ -5,7 +5,10 @@
   </description>
 
   <firmware name="rotorcraft">
-    <target name="ap" board="bebop"/>
+    <target name="ap" board="bebop">
+      <configure name="HOST" value="192.168.40.$(AC_ID)" />
+      <configure name="MODEM_HOST" value="192.168.40.13" />
+    </target>
 
     <target name="nps" board="pc">
       <module name="fdm" type="jsbsim"/>
