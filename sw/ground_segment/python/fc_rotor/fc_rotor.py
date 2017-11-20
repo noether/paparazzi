@@ -163,6 +163,9 @@ def main():
     aorv = int(sys.argv[7])
     joystick_present = int(sys.argv[8])
 
+    if np.size(d) == 1:
+        mus.shape = (4,1)
+
     if B.size == 2:
         B.shape = (2,1)
 

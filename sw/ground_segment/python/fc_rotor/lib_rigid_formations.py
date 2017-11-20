@@ -68,8 +68,11 @@ def make_Dztstar(d, m, l):
         return np.eyes(edges)
     
     Ztstar = np.zeros(edges)
-    for i in range(0, edges):
-        Ztstar[i] = d[i]**(l-2)
+    if edges == 1:
+        Ztstar[0] = d**(l-2)
+    else:
+        for i in range(0, edges):
+            Ztstar[i] = d[i]**(l-2)
 
     return np.diag(Ztstar)
 
