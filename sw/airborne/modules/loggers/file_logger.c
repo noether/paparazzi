@@ -75,6 +75,8 @@ void file_logger_stop(void)
   }
 }
 
+#include "firmwares/rotorcraft/guidance/guidance_v.h"
+
 /** Log the values to a csv file */
 void file_logger_periodic(void)
 {
@@ -83,18 +85,20 @@ void file_logger_periodic(void)
   }
   static uint32_t counter;
   struct Int32Quat *quat = stateGetNedToBodyQuat_i();
+  struct NedCoor_f *accel = stateGetAccelNed_f();
+  struct FloatRates *body_rates = stateGetBodyRates_f();
 
-  fprintf(file_logger, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+  fprintf(file_logger, "%d,%f,%f,%f,%f,%f,%f,%d,%d,%f,%d,%d,%d,%d,%d,%d,%d,%d\n",
           counter,
-          imu.gyro_unscaled.p,
-          imu.gyro_unscaled.q,
-          imu.gyro_unscaled.r,
-          imu.accel_unscaled.x,
-          imu.accel_unscaled.y,
-          imu.accel_unscaled.z,
-          imu.mag_unscaled.x,
-          imu.mag_unscaled.y,
-          imu.mag_unscaled.z,
+          body_rates->p,
+          body_rates->q,
+          body_rates->r,
+          accel->x,
+          accel->y,
+          accel->z,
+          guidance_v_z_ref,
+          stateGetPositionNed_i()->z,
+          stateGetSpeedNed_f()->z,
           stabilization_cmd[COMMAND_THRUST],
           stabilization_cmd[COMMAND_ROLL],
           stabilization_cmd[COMMAND_PITCH],

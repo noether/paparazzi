@@ -29,6 +29,7 @@
       <!-- Use GPS altitude measurments and set the R gain -->
       <define name="INS_USE_GPS_ALT" value="1"/>
       <define name="INS_VFF_R_GPS" value="0.01"/>
+      <define name="USE_BARO_BOARD" value="FALSE"/>
     </module>
     <!--<module name="gps" type="furuno"/>-->
     <module name="stabilization" type="indi"/>
@@ -48,9 +49,9 @@
     <module name="geo_mag"/>
     <module name="air_data"/>
     <module name="send_imu_mag_current"/>
-    <!--module name="logger_file">
+    <module name="logger_file">
       <define name="FILE_LOGGER_PATH" value="/data/ftp/internal_000"/>
-    </module-->
+    </module>
   </modules>
 
   <commands>
@@ -153,6 +154,11 @@
     <define name="ADAPT_THROTTLE_ENABLED" value="TRUE"/>
   </section>
 
+  <section name="GUIDANCE_INDI">
+    <define name="GUIDANCE_INDI_POS_GAIN" value="1.0"/>
+    <define name="GUIDANCE_INDI_SPEED_GAIN" value="1.5"/>
+  </section>
+
   <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
     <!-- Good weather -->
     <define name="MAX_BANK" value="20" unit="deg"/>
@@ -183,6 +189,8 @@
     <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
 
     <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
+    <define name="BEBOP_ACCEL_RANGE" value="MPU60X0_ACCEL_RANGE_16G"/>
+    <define name="BEBOP_GYRO_RANGE" value="MPU60X0_GYRO_RANGE_2000"/>
   </section>
 
   <section name="BAT">
