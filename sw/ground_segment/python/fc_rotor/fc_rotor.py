@@ -51,7 +51,7 @@ def get_joy_axis(joystick):
    y = joystick.get_axis(3)
    return x, y
 
-def formation(B, d, mus, k, aorv, joystick_present):
+def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
     no_ins_msg = 0
     for rc in list_rotorcrafts:
         if rc.X[0] == -999.0:
@@ -59,6 +59,10 @@ def formation(B, d, mus, k, aorv, joystick_present):
             no_ins_msg = 1
         if rc.timeout > 0.2:
             print("The INS msg of rotorcraft ", rc.id, " stopped")
+            return
+        if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[0]
+            or rc.X[1] < geo_fence[1] or rc.X[1] > geo_fence[1]
+            or rc.X[2] < geo_fence[2] or rc.X[2] > geo_fence[2]):
             return
 
     if no_ins_msg == 1:
@@ -143,7 +147,7 @@ def formation(B, d, mus, k, aorv, joystick_present):
 
 def main():
     if len(sys.argv) != 8:
-        print "Usage: fc_rotor ids.txt topology.txt desired_distances.txt motion_parameters.txt gains.txt a/v(1/0) joystick(1/0)"
+        print "Usage: fc_rotor ids.txt topology.txt desired_distances.txt motion_parameters.txt gains.txt geo_fence.txt a/v(1/0) joystick(1/0)"
         interface.shutdown()
         return
 
@@ -152,8 +156,9 @@ def main():
     d = np.loadtxt(sys.argv[3])
     mus = np.loadtxt(sys.argv[4])
     k = np.loadtxt(sys.argv[5])
-    aorv = int(sys.argv[6])
-    joystick_present = int(sys.argv[7])
+    geo_fence = np.loadtxt(sys.argv[6])
+    aorv = int(sys.argv[7])
+    joystick_present = int(sys.argv[8])
 
     if B.size == 2:
         B.shape = (2,1)
@@ -198,7 +203,7 @@ def main():
             for rc in list_rotorcrafts:
                 rc.timeout = rc.timeout + 0.02
 
-            formation(B, d, mus, k, aorv, joystick_present)
+            formation(B, d, mus, k, geo_fence, aorv, joystick_present)
 
     except KeyboardInterrupt:
         interface.shutdown()
