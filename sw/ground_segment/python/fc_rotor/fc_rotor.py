@@ -57,12 +57,13 @@ def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
         if rc.X[0] == -999.0:
             print("Waiting for INS msg of rotorcraft ", rc.id)
             no_ins_msg = 1
-        if rc.timeout > 0.2:
+        if rc.timeout > 0.5:
             print("The INS msg of rotorcraft ", rc.id, " stopped")
-            return
-        if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[0]
-            or rc.X[1] < geo_fence[1] or rc.X[1] > geo_fence[1]
-            or rc.X[2] < geo_fence[2] or rc.X[2] > geo_fence[2]):
+            no_ins_msg = 1
+        if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[1]
+            or rc.X[1] < geo_fence[2] or rc.X[1] > geo_fence[3]
+            or rc.X[2] < geo_fence[4] or rc.X[2] > geo_fence[5]):
+            print("The rotorcraft", rc.id, " is out of the fence")
             return
 
     if no_ins_msg == 1:
@@ -99,10 +100,12 @@ def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
     global rotation
     if joystick_present == 1:
        for e in pygame.event.get():
-          translation, rotation = get_joy_axis(stick)
-          if translation < 0.3 and translation > -0.3:
+           translation, rotation = get_joy_axis(stick)
+           translation = translation*0.5
+           rotation = rotation*0.5
+           if translation < 0.25 and translation > -0.25:
               translation = 0
-          if rotation < 0.3 and rotation > -0.3:
+           if rotation < 0.25 and rotation > -0.25:
               rotation = 0
 
     jmu_t = translation*mu_t
@@ -124,7 +127,7 @@ def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
         print "Error distances: " + str(E).replace('[','').replace(']','')
 
     elif aorv == 1:
-        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + la.kron(Av.dot(Dztstar).dot(B.T).dot(Av), np.eye(2)).dot(Zh)
+        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + la.kron(Avr.dot(Dztstar).dot(B.T).dot(Avr), np.eye(2)).dot(Zh)
 
         #print "Positions: " + str(X).replace('[','').replace(']','')
         #print "Velocities: " + str(V).replace('[','').replace(']','')
@@ -146,7 +149,7 @@ def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
     return
 
 def main():
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 9:
         print "Usage: fc_rotor ids.txt topology.txt desired_distances.txt motion_parameters.txt gains.txt geo_fence.txt a/v(1/0) joystick(1/0)"
         interface.shutdown()
         return
