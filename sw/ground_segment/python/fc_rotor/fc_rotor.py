@@ -49,9 +49,11 @@ def message_recv(ac_id, msg):
 def get_joy_axis(joystick):
    x = joystick.get_axis(1)
    y = joystick.get_axis(3)
-   return x, y
+   x2 = joystick.get_axis(0)
+   y2 = joystick.get_axis(4)
+   return x, y, x2, y2
 
-def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
+def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     no_ins_msg = 0
     for rc in list_rotorcrafts:
         if rc.X[0] == -999.0:
@@ -95,50 +97,61 @@ def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
     tilde_mu_t = mus[1,:]
     mu_r = mus[2,:]
     tilde_mu_r = mus[3,:]
+    mu_t2 = mus[4,:]
+    tilde_mu_t2 = mus[5,:]
+    mu_r2 = mus[6,:]
+    tilde_mu_r2 = mus[7,:]
 
     global translation
     global rotation
     if joystick_present == 1:
        for e in pygame.event.get():
-           translation, rotation = get_joy_axis(stick)
-           translation = translation*0.5
-           rotation = rotation*0.5
-           if translation < 0.25 and translation > -0.25:
+           translation, rotation, translation2, rotation2 = get_joy_axis(stick)
+           translation = translation*1.9
+           rotation = rotation*1.9
+           transalation2 = translation2*1.9
+           rotation2 = rotation2*1.9
+           if translation < 0.3 and translation > -0.3:
               translation = 0
-           if rotation < 0.25 and rotation > -0.25:
+           if rotation < 0.3 and rotation > -0.3:
               rotation = 0
+           if translation2 < 0.3 and translation2 > -0.3:
+              translation2 = 0
+           if rotation2 < 0.3 and rotation2 > -0.3:
+              rotation2 = 0
 
     jmu_t = translation*mu_t
     jtilde_mu_t = translation*mu_t
     jmu_r = rotation*mu_r
     jtilde_mu_r = rotation*mu_r
+    jmu_t2 = translation2*mu_t
+    jtilde_mu_t2 = translation2*mu_t
+    jmu_r2 = rotation2*mu_r
+    jtilde_mu_r2 = rotation2*mu_r
 
     Avt = rf.make_Av(B, jmu_t, jtilde_mu_t)
     Avtb = la.kron(Avt, np.eye(2))
-
     Avr = rf.make_Av(B, jmu_r, jtilde_mu_r)
     Avrb = la.kron(Avr, np.eye(2))
+    Avt2 = rf.make_Av(B, jmu_t2, jtilde_mu_t2)
+    Avt2b = la.kron(Avt, np.eye(2))
+    Avr2 = rf.make_Av(B, jmu_r2, jtilde_mu_r2)
+    Avr2b = la.kron(Avr, np.eye(2))
 
-    Avb = Avtb + Avrb
+    Avb = Avtb + Avrb + Avt2b + Avr2b
 
-    if aorv == 0:
-        U = -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + Avb.dot(Zh)
+    U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + la.kron(Avr.dot(Dztstar).dot(B.T).dot(Avr), np.eye(2)).dot(Zh)
 
-        print "Error distances: " + str(E).replace('[','').replace(']','')
-
-    elif aorv == 1:
-        U = -k[1]*V -k[0]*Bb.dot(Dz).dot(Dzt).dot(E) + k[1]*Avb.dot(Zh) + la.kron(Avr.dot(Dztstar).dot(B.T).dot(Avr), np.eye(2)).dot(Zh)
-
-        #print "Positions: " + str(X).replace('[','').replace(']','')
-        #print "Velocities: " + str(V).replace('[','').replace(']','')
-        #print "Acceleration command: " + str(U).replace('[','').replace(']','')
-        print "Error distances: " + str(E).replace('[','').replace(']','')
+    #print "Positions: " + str(X).replace('[','').replace(']','')
+    #print "Velocities: " + str(V).replace('[','').replace(']','')
+    #print "Acceleration command: " + str(U).replace('[','').replace(']','')
+    #print "Error distances: " + str(E).replace('[','').replace(']','')
 
     i = 0
     for ac in list_rotorcrafts:
         msg = PprzMessage("datalink", "FC_ROTOR")
         msg['ac_id'] = ac.id
-        msg['av'] = aorv
+        msg['dim'] = dim
         msg['ux'] = U[i]
         msg['uy'] = U[i+1]
         msg['uz'] = 0
@@ -150,7 +163,7 @@ def formation(B, d, mus, k, geo_fence, aorv, joystick_present):
 
 def main():
     if len(sys.argv) != 9:
-        print "Usage: fc_rotor ids.txt topology.txt desired_distances.txt motion_parameters.txt gains.txt geo_fence.txt a/v(1/0) joystick(1/0)"
+        print "Usage: fc_rotor ids.txt topology.txt desired_distances.txt motion_parameters.txt gains.txt geo_fence.txt 3d/2d(1/0) joystick(1/0)"
         interface.shutdown()
         return
 
@@ -160,7 +173,7 @@ def main():
     mus = np.loadtxt(sys.argv[4])
     k = np.loadtxt(sys.argv[5])
     geo_fence = np.loadtxt(sys.argv[6])
-    aorv = int(sys.argv[7])
+    dim = int(sys.argv[7])
     joystick_present = int(sys.argv[8])
 
     if np.size(d) == 1:
@@ -185,8 +198,8 @@ def main():
         print("The number of (columns) motion parameters and relative vectors do not match")
         return
 
-    if 4 != np.size(mus,0):
-        print("The number of (rows) motion parameters must be four")
+    if 8 != np.size(mus,0):
+        print("The number of (rows) motion parameters must be eight")
         return
 
     for i in range(0, len(ids)):
@@ -209,7 +222,7 @@ def main():
             for rc in list_rotorcrafts:
                 rc.timeout = rc.timeout + 0.02
 
-            formation(B, d, mus, k, geo_fence, aorv, joystick_present)
+            formation(B, d, mus, k, geo_fence, dim, joystick_present)
 
     except KeyboardInterrupt:
         interface.shutdown()

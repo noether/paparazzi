@@ -43,17 +43,19 @@ void fc_read_msg(void)
     uint8_t ac_id = DL_FC_ROTOR_ac_id(dl_buffer);
 
     if (ac_id == AC_ID) {
-      uint8_t av = DL_FC_ROTOR_av(dl_buffer);
+      uint8_t dim = DL_FC_ROTOR_dim(dl_buffer);
 
       u.x = DL_FC_ROTOR_ux(dl_buffer);
       u.y = DL_FC_ROTOR_uy(dl_buffer);
-      u.z = -DL_FC_ROTOR_uz(dl_buffer);
+      u.z = DL_FC_ROTOR_uz(dl_buffer);
 
-      if(av == 0)
-        return;
-      else if(av == 1)
+      if(dim == 0)
       {
-        AbiSendMsgACCEL_SP(ACCEL_SP_ID, &u);
+        AbiSendMsgACCEL_SP_3D(ACCEL_SP_ID, &u);
+      }
+      else if(dim == 1)
+      {
+        AbiSendMsgACCEL_SP_2D(ACCEL_SP_ID, &u);
       }
     }
 }

@@ -120,10 +120,13 @@
       <field name="vel_body_z_FF" type="float" unit="m/s"/>
     </message>
 
-    <message name="ACCEL_SP" id="21">
+    <message name="ACCEL_SP_2D" id="21">
       <field name="accel_sp" type="struct FloatVect3 *" unit="m/s^2"/>
     </message>
 
+    <message name="ACCEL_SP_3D" id="22">
+      <field name="accel_sp" type="struct FloatVect3 *" unit="m/s^2"/>
+    </message>
   </msg_class>
 
 </protocol>

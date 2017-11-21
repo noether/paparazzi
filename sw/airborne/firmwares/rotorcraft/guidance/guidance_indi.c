@@ -61,9 +61,11 @@ float guidance_indi_speed_gain = 1.8;
 #endif
 
 abi_event accel_sp_ev;
-static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp);
+static void accel_sp_cb_2d(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp);
+static void accel_sp_cb_3d(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp);
 struct FloatVect3 indi_accel_sp = {0.0,0.0,0.0};
-bool indi_accel_sp_set = false;
+bool indi_accel_sp_set_2d = false;
+bool indi_accel_sp_set_3d = false;
 
 struct FloatVect3 sp_accel = {0.0,0.0,0.0};
 #ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
@@ -113,7 +115,8 @@ static void guidance_indi_calcG(struct FloatMat33 *Gmat);
  */
 void guidance_indi_init(void)
 {
-  AbiBindMsgACCEL_SP(ACCEL_SP_ID, &accel_sp_ev, accel_sp_cb);
+  AbiBindMsgACCEL_SP_2D(ACCEL_SP_ID, &accel_sp_ev, accel_sp_cb_2d);
+  AbiBindMsgACCEL_SP_3D(ACCEL_SP_ID, &accel_sp_ev, accel_sp_cb_3d);
 }
 
 /**
@@ -154,19 +157,27 @@ void guidance_indi_run(bool in_flight, float heading_sp) {
   float speed_sp_y = pos_y_err * guidance_indi_pos_gain;
   float speed_sp_z = pos_z_err * guidance_indi_pos_gain;
 
-  // If the acceleration setpoint is set over telemetry, use that
-  if(indi_accel_sp_set) {
+  // If the acceleration setpoint is set over ABI message
+  if(indi_accel_sp_set_2d){
     sp_accel.x = indi_accel_sp.x;
     sp_accel.y = indi_accel_sp.y;
-    //TODO Now we only care about 2D formations
+    // In 2D the vertical motion is derived from the flight plan
     sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
-    //sp_accel.z = indi_accel_sp->z;
     float dt = get_sys_time_float() - time_of_accel_sp;
     if(dt > 0.5)
     {
-      indi_accel_sp_set = false;
+      indi_accel_sp_set_2d = false;
     }
-  } else {
+  } else if(indi_accel_sp_set_3d){
+    sp_accel.x = indi_accel_sp.x;
+    sp_accel.y = indi_accel_sp.y;
+    sp_accel.z = indi_accel_sp.z;
+    float dt = get_sys_time_float() - time_of_accel_sp;
+    if(dt > 0.5)
+    {
+      indi_accel_sp_set_3d = false;
+    }
+  } else{
     sp_accel.x = (speed_sp_x - stateGetSpeedNed_f()->x) * guidance_indi_speed_gain;
     sp_accel.y = (speed_sp_y - stateGetSpeedNed_f()->y) * guidance_indi_speed_gain;
     sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
@@ -347,11 +358,19 @@ void stabilization_attitude_set_setpoint_rp_quat_f(struct FloatEulers* indi_rp_c
 /**
  * ABI callback that obtains the acceleration setpoint from telemetry
  */
-static void accel_sp_cb(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp)
+static void accel_sp_cb_2d(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp)
+{
+  indi_accel_sp.x = accel_sp->x;
+  indi_accel_sp.y = accel_sp->y;
+  indi_accel_sp_set_2d = true;
+  time_of_accel_sp = get_sys_time_float();
+}
+
+static void accel_sp_cb_3d(uint8_t UNUSED sender_id, struct FloatVect3* accel_sp)
 {
   indi_accel_sp.x = accel_sp->x;
   indi_accel_sp.y = accel_sp->y;
   indi_accel_sp.z = accel_sp->z;
-  indi_accel_sp_set = true;
+  indi_accel_sp_set_3d = true;
   time_of_accel_sp = get_sys_time_float();
 }
