@@ -36,6 +36,10 @@ rotation = 0.0
 rotation2 = 0.0
 scale = 1.0
 altitude = 1.0
+but_A_pressed = 0
+but_B_pressed = 0
+but_X_pressed = 0
+but_Y_pressed = 0
 
 def message_recv(ac_id, msg):
     if ac_id in list_ids:
@@ -71,11 +75,11 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
         if rc.timeout > 0.5:
             print("The INS msg of rotorcraft ", rc.id, " stopped")
             no_ins_msg = 1
-        if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[1]
-            or rc.X[1] < geo_fence[2] or rc.X[1] > geo_fence[3]
-            or rc.X[2] < geo_fence[4] or rc.X[2] > geo_fence[5]):
-            print("The rotorcraft", rc.id, " is out of the fence")
-            return
+        # if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[1]
+            # or rc.X[1] < geo_fence[2] or rc.X[1] > geo_fence[3]
+            # or rc.X[2] < geo_fence[4] or rc.X[2] > geo_fence[5]):
+            # print("The rotorcraft", rc.id, " is out of the fence")
+            # return
 
     if no_ins_msg == 1:
         return
@@ -93,6 +97,8 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
         i = i + 2
 
     # Computation of useful matrices
+    d = scale*d
+
     Bb = la.kron(B, np.eye(2))
     Z = Bb.T.dot(X)
     Dz = rf.make_Dz(Z, 2)
@@ -117,13 +123,17 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     global rotation2
     global scale
     global altitude
+    global but_A_pressed
+    global but_B_pressed
+    global but_X_pressed
+    global but_Y_pressed
     if joystick_present == 1:
         for e in pygame.event.get():
-            translation, rotation, translation2, rotation2, A, B, X, Y = get_joy_axis(stick)
-            translation = translation*1.9
-            rotation = rotation*1.9
-            transalation2 = translation2*1.9
-            rotation2 = rotation2*1.9
+            translation, rotation, translation2, rotation2, but_A, but_B, but_X, but_Y = get_joy_axis(stick)
+            translation = translation*1.5
+            rotation = rotation*1.5
+            transalation2 = translation2*1.5
+            rotation2 = rotation2*1.5
             if translation < 0.3 and translation > -0.3:
                translation = 0
             if rotation < 0.3 and rotation > -0.3:
@@ -133,12 +143,19 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
             if rotation2 < 0.3 and rotation2 > -0.3:
                rotation2 = 0
 
-            if X == 1:
+            if but_X == 1 and (not but_X_pressed):
+                but_X_pressed = 1
                 if scale > 0.2:
                     scale = scale - 0.05
-            if B == 1:
+            elif but_X == 0:
+                but_X_pressed = 0
+            if but_B == 1 and (not but_B_pressed):
+                but_B_pressed = 1
                 scale = scale + 0.05
-            if Y == 1:
+            elif but_B == 0:
+                but_B_pressed = 0
+            if but_Y == 1 and (not but_Y_pressed):
+                but_Y_pressed = 1
                 if altitude < 4.0:
                     altitude = altitude + 0.1
                     for rc in list_rotorcrafts:
@@ -147,7 +164,10 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
                         msg['index'] = rc.fa_index
                         msg['value'] = altitude
                         interface.send(msg)
-            if A == 1:
+            elif but_Y == 0:
+                but_Y_pressed = 0
+            if but_A == 1 and (not but_A_pressed):
+                but_A_pressed = 1
                 altitude = altitude - 0.1
                 for rc in list_rotorcrafts:
                     msg = PprzMessage("ground", "DL_SETTING")
@@ -155,27 +175,26 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
                     msg['index'] = rc.fa_index
                     msg['value'] = altitude
                     interface.send(msg)
-
-
-    d = scale*d
+            elif but_A == 0:
+                but_A_pressed = 0
 
     jmu_t = translation*mu_t
-    jtilde_mu_t = translation*mu_t
+    jtilde_mu_t = translation*tilde_mu_t
     jmu_r = rotation*mu_r
-    jtilde_mu_r = rotation*mu_r
-    jmu_t2 = translation2*mu_t
-    jtilde_mu_t2 = translation2*mu_t
-    jmu_r2 = rotation2*mu_r
-    jtilde_mu_r2 = rotation2*mu_r
+    jtilde_mu_r = rotation*tilde_mu_r
+    jmu_t2 = translation2*mu_t2
+    jtilde_mu_t2 = translation2*tilde_mu_t2
+    jmu_r2 = rotation2*mu_r2
+    jtilde_mu_r2 = rotation2*tilde_mu_r2
 
     Avt = rf.make_Av(B, jmu_t, jtilde_mu_t)
     Avtb = la.kron(Avt, np.eye(2))
     Avr = rf.make_Av(B, jmu_r, jtilde_mu_r)
     Avrb = la.kron(Avr, np.eye(2))
     Avt2 = rf.make_Av(B, jmu_t2, jtilde_mu_t2)
-    Avt2b = la.kron(Avt, np.eye(2))
+    Avt2b = la.kron(Avt2, np.eye(2))
     Avr2 = rf.make_Av(B, jmu_r2, jtilde_mu_r2)
-    Avr2b = la.kron(Avr, np.eye(2))
+    Avr2b = la.kron(Avr2, np.eye(2))
 
     Avb = Avtb + Avrb + Avt2b + Avr2b
 
@@ -184,7 +203,7 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     #print "Positions: " + str(X).replace('[','').replace(']','')
     #print "Velocities: " + str(V).replace('[','').replace(']','')
     #print "Acceleration command: " + str(U).replace('[','').replace(']','')
-    #print "Error distances: " + str(E).replace('[','').replace(']','')
+    print "Error distances: " + str(E).replace('[','').replace(']','')
 
     i = 0
     for ac in list_rotorcrafts:

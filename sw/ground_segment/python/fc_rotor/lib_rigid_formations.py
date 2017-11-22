@@ -33,7 +33,8 @@ def make_Zh(Z, m):
 
     for i in range(0, edges):
         norm = la.norm(Z[(i*m):(i*m+m)])
-        Zh[(i*m):(i*m+m)] = Z[(i*m):(i*m+m)]/norm
+        if norm > 0.05:
+            Zh[(i*m):(i*m+m)] = Z[(i*m):(i*m+m)]/norm
 
     return Zh
 
