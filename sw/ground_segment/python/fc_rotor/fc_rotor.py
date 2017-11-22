@@ -129,9 +129,9 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
                     print "key down"
                 if event.key == pygame.K_LEFT:
                     if scale > 0.2:
-                        scale = scale - 0.1
+                        scale = scale - 0.05
                 if event.key == pygame.K_RIGHT:
-                    scale = scale + 0.1
+                    scale = scale + 0.05
 
 
     d = scale*d
