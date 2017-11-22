@@ -105,20 +105,26 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     global translation
     global rotation
     if joystick_present == 1:
-       for e in pygame.event.get():
-           translation, rotation, translation2, rotation2 = get_joy_axis(stick)
-           translation = translation*1.9
-           rotation = rotation*1.9
-           transalation2 = translation2*1.9
-           rotation2 = rotation2*1.9
-           if translation < 0.3 and translation > -0.3:
-              translation = 0
-           if rotation < 0.3 and rotation > -0.3:
-              rotation = 0
-           if translation2 < 0.3 and translation2 > -0.3:
-              translation2 = 0
-           if rotation2 < 0.3 and rotation2 > -0.3:
-              rotation2 = 0
+        for e in pygame.event.get():
+            translation, rotation, translation2, rotation2 = get_joy_axis(stick)
+            translation = translation*1.9
+            rotation = rotation*1.9
+            transalation2 = translation2*1.9
+            rotation2 = rotation2*1.9
+            if translation < 0.3 and translation > -0.3:
+               translation = 0
+            if rotation < 0.3 and rotation > -0.3:
+               rotation = 0
+            if translation2 < 0.3 and translation2 > -0.3:
+               translation2 = 0
+            if rotation2 < 0.3 and rotation2 > -0.3:
+               rotation2 = 0
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    print "key left"
+                if event.key == pygame.K_RIGHT:
+                    print "key right"
 
     jmu_t = translation*mu_t
     jtilde_mu_t = translation*mu_t
