@@ -23,6 +23,7 @@ class rotorcraft:
         self.X = np.array([-999.0, -999.0, -999.0])
         self.V = np.array([-999.0, -999.0, -999.0])
         self.timeout = 0
+        self.fa_index = -999
 
 list_ids = []
 list_rotorcrafts = []
@@ -30,8 +31,11 @@ interface = IvyMessagesInterface("Formation Control Rotorcrafts")
 
 # Joystick and Keyboard
 translation = 0.0
+translation2 = 0.0
 rotation = 0.0
+rotation2 = 0.0
 scale = 1.0
+altitude = 1.0
 
 def message_recv(ac_id, msg):
     if ac_id in list_ids:
@@ -52,7 +56,11 @@ def get_joy_axis(joystick):
    y = joystick.get_axis(3)
    x2 = joystick.get_axis(0)
    y2 = joystick.get_axis(4)
-   return x, y, x2, y2
+   A = joystick.get_button(0)
+   B = joystick.get_button(1)
+   X = joystick.get_button(2)
+   Y = joystick.get_button(3)
+   return x, y, x2, y2, A, B, X, Y
 
 def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     no_ins_msg = 0
@@ -104,11 +112,14 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     tilde_mu_r2 = mus[7,:]
 
     global translation
+    global translation2
     global rotation
+    global rotation2
     global scale
+    global altitude
     if joystick_present == 1:
         for e in pygame.event.get():
-            translation, rotation, translation2, rotation2 = get_joy_axis(stick)
+            translation, rotation, translation2, rotation2, A, B, X, Y = get_joy_axis(stick)
             translation = translation*1.9
             rotation = rotation*1.9
             transalation2 = translation2*1.9
@@ -122,16 +133,28 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
             if rotation2 < 0.3 and rotation2 > -0.3:
                rotation2 = 0
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    print "key up"
-                if event.key == pygame.K_DOWN:
-                    print "key down"
-                if event.key == pygame.K_LEFT:
-                    if scale > 0.2:
-                        scale = scale - 0.05
-                if event.key == pygame.K_RIGHT:
-                    scale = scale + 0.05
+            if X == 1:
+                if scale > 0.2:
+                    scale = scale - 0.05
+            if B == 1:
+                scale = scale + 0.05
+            if Y == 1:
+                if altitude < 4.0:
+                    altitude = altitude + 0.1
+                    for rc in list_rotorcrafts:
+                        msg = PprzMessage("ground", "DL_SETTING")
+                        msg['ac_id'] = rc.id
+                        msg['index'] = rc.fa_index
+                        msg['value'] = altitude
+                        interface.send(msg)
+            if A == 1:
+                altitude = altitude - 0.1
+                for rc in list_rotorcrafts:
+                    msg = PprzMessage("ground", "DL_SETTING")
+                    msg['ac_id'] = rc.id
+                    msg['index'] = rc.fa_index
+                    msg['value'] = altitude
+                    interface.send(msg)
 
 
     d = scale*d
@@ -223,6 +246,20 @@ def main():
 
     # Ivy
     interface.subscribe(message_recv)
+
+    for rc in list_rotorcrafts:
+        settings = PaparazziACSettings(rc.id)
+        list_of_indexes = ['flight_altitude']
+
+        for setting_ in list_of_indexes:
+            try:
+                index = settings.name_lookup[setting_].index
+                if setting_ == 'flight_altitude':
+                    rc.fa_index = index
+            except Exception as e:
+                print(e)
+                print(setting_ + " setting not found, \
+                        have you forgotten gvf.xml in your settings?")
 
     # Joystick
     global stick
