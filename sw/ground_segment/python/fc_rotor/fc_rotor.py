@@ -28,9 +28,10 @@ list_ids = []
 list_rotorcrafts = []
 interface = IvyMessagesInterface("Formation Control Rotorcrafts")
 
-# Joystick
-translation = 0
-rotation = 0
+# Joystick and Keyboard
+translation = 0.0
+rotation = 0.0
+scale = 1.0
 
 def message_recv(ac_id, msg):
     if ac_id in list_ids:
@@ -104,6 +105,7 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
 
     global translation
     global rotation
+    global scale
     if joystick_present == 1:
         for e in pygame.event.get():
             translation, rotation, translation2, rotation2 = get_joy_axis(stick)
@@ -121,10 +123,18 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
                rotation2 = 0
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    print "key up"
+                if event.key == pygame.K_DOWN:
+                    print "key down"
                 if event.key == pygame.K_LEFT:
-                    print "key left"
+                    if scale > 0.2:
+                        scale = scale - 0.1
                 if event.key == pygame.K_RIGHT:
-                    print "key right"
+                    scale = scale + 0.1
+
+
+    d = scale*d
 
     jmu_t = translation*mu_t
     jtilde_mu_t = translation*mu_t
