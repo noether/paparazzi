@@ -130,10 +130,10 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     if joystick_present == 1:
         for e in pygame.event.get():
             translation, rotation, translation2, rotation2, but_A, but_B, but_X, but_Y = get_joy_axis(stick)
-            translation = translation*1.5
-            rotation = rotation*1.5
-            transalation2 = translation2*1.5
-            rotation2 = rotation2*1.5
+            translation = translation*2.5
+            rotation = rotation*3.5
+            translation2 = -translation2*2.5
+            rotation2 = rotation2*2.5
             if translation < 0.3 and translation > -0.3:
                translation = 0
             if rotation < 0.3 and rotation > -0.3:
