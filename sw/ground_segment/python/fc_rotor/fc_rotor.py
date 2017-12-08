@@ -262,6 +262,10 @@ def main():
         print("The number of (rows) motion parameters must be eight")
         return
 
+    if dim == 1:
+        print("3D formation is not supported yet")
+        return
+
     for i in range(0, len(ids)):
         list_rotorcrafts.append(rotorcraft(int(ids[i])))
 
