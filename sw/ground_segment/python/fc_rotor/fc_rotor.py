@@ -127,6 +127,8 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
     global but_B_pressed
     global but_X_pressed
     global but_Y_pressed
+    # TODO Joystick can be read from ivy and the dead-zones and sensitivity should not be hardcoded
+    # Right now, only Xbox PAD is supported
     if joystick_present == 1:
         for e in pygame.event.get():
             translation, rotation, translation2, rotation2, but_A, but_B, but_X, but_Y = get_joy_axis(stick)
