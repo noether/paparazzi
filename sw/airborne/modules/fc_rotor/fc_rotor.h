@@ -14,9 +14,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with paparazzi; see the file COPYING.  If not, write to
- * the Free Software Foundation, 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * along with paparazzi; see the file COPYING.  If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -29,8 +28,6 @@
 
 #ifndef FC_ROTOR_H
 #define FC_ROTOR_H
-
-extern int fc_rotor_on;
 
 extern void fc_rotor_init(void);
 extern void fc_read_msg(void);
