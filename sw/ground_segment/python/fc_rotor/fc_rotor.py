@@ -75,11 +75,11 @@ def formation(B, d, mus, k, geo_fence, dim, joystick_present):
         if rc.timeout > 0.5:
             print("The INS msg of rotorcraft ", rc.id, " stopped")
             no_ins_msg = 1
-        # if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[1]
-            # or rc.X[1] < geo_fence[2] or rc.X[1] > geo_fence[3]
-            # or rc.X[2] < geo_fence[4] or rc.X[2] > geo_fence[5]):
-            # print("The rotorcraft", rc.id, " is out of the fence")
-            # return
+         if (rc.X[0] < geo_fence[0] or rc.X[0] > geo_fence[1]
+             or rc.X[1] < geo_fence[2] or rc.X[1] > geo_fence[3]
+             or rc.X[2] < geo_fence[4] or rc.X[2] > geo_fence[5]):
+             print("The rotorcraft", rc.id, " is out of the fence")
+             return
 
     if no_ins_msg == 1:
         return
