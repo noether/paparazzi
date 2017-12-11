@@ -38,14 +38,14 @@ void fc_rotor_init(void)
 void fc_read_msg(void)
 {
     struct FloatVect3 u;
-    uint8_t ac_id = DL_FC_ROTOR_ac_id(dl_buffer);
+    uint8_t ac_id = DL_DESIRED_SET_POINT_ac_id(dl_buffer);
 
     if (ac_id == AC_ID) {
-      uint8_t dim = DL_FC_ROTOR_dim(dl_buffer);
+      uint8_t dim = DL_DESIRED_SET_POINT_flag(dl_buffer);
 
-      u.x = DL_FC_ROTOR_ux(dl_buffer);
-      u.y = DL_FC_ROTOR_uy(dl_buffer);
-      u.z = DL_FC_ROTOR_uz(dl_buffer);
+      u.x = DL_DESIRED_SET_POINT_ux(dl_buffer);
+      u.y = DL_DESIRED_SET_POINT_uy(dl_buffer);
+      u.z = DL_DESIRED_SET_POINT_uz(dl_buffer);
 
       if(dim == 1)
       {

@@ -13,7 +13,7 @@
 
    <init fun = "fc_rotor_init()"/>
 
-   <datalink message="FC_ROTOR" fun="fc_read_msg()"/>
+   <datalink message="DESIRED_SET_POINT" fun="fc_read_msg()"/>
 
    <makefile firmware="rotorcraft">
      <define name="FC_ROTOR"/>
