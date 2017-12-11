@@ -246,6 +246,7 @@ def main():
     list_ids = np.ndarray.tolist(ids)
     map(int, list_ids)
 
+    # Check formation settings
     if np.size(ids) != np.size(B,0):
         print("The number of rotorcrafts in the topology and ids do not match")
         return
@@ -294,12 +295,15 @@ def main():
         stick.init()
 
     try:
+        # The main loop
         while True:
+            # TODO: make better frequency managing
             time.sleep(0.02)
 
             for rc in list_rotorcrafts:
                 rc.timeout = rc.timeout + 0.02
 
+            # Run the formation algorithm
             formation(B, d, mus, k, geo_fence, dim, joystick_present)
 
     except KeyboardInterrupt:
