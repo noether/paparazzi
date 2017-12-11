@@ -100,7 +100,8 @@ struct FloatVect3 euler_cmd;
 
 float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
 
-float time_of_accel_sp = 0.0;
+float time_of_accel_sp_2d = 0.0;
+float time_of_accel_sp_3d = 0.0;
 
 struct FloatEulers guidance_euler_cmd;
 float thrust_in;
@@ -162,7 +163,7 @@ void guidance_indi_run(bool in_flight, float heading_sp) {
     sp_accel.y = indi_accel_sp.y;
     // In 2D the vertical motion is derived from the flight plan
     sp_accel.z = (speed_sp_z - stateGetSpeedNed_f()->z) * guidance_indi_speed_gain;
-    float dt = get_sys_time_float() - time_of_accel_sp;
+    float dt = get_sys_time_float() - time_of_accel_sp_2d;
     if(dt > 0.5)
     {
       indi_accel_sp_set_2d = false;
@@ -171,7 +172,7 @@ void guidance_indi_run(bool in_flight, float heading_sp) {
     sp_accel.x = indi_accel_sp.x;
     sp_accel.y = indi_accel_sp.y;
     sp_accel.z = indi_accel_sp.z;
-    float dt = get_sys_time_float() - time_of_accel_sp;
+    float dt = get_sys_time_float() - time_of_accel_sp_3d;
     if(dt > 0.5)
     {
       indi_accel_sp_set_3d = false;
@@ -363,13 +364,13 @@ static void accel_sp_cb(uint8_t sender_id, struct FloatVect3* accel_sp)
     indi_accel_sp.x = accel_sp->x;
     indi_accel_sp.y = accel_sp->y;
     indi_accel_sp_set_2d = true;
-    time_of_accel_sp = get_sys_time_float();
+    time_of_accel_sp_2d = get_sys_time_float();
   } else if(sender_id == 2) {
     indi_accel_sp.x = accel_sp->x;
     indi_accel_sp.y = accel_sp->y;
     indi_accel_sp.z = accel_sp->z;
     indi_accel_sp_set_3d = true;
-    time_of_accel_sp = get_sys_time_float();
+    time_of_accel_sp_3d = get_sys_time_float();
   }
 }
 
