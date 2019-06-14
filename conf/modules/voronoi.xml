@@ -26,15 +26,15 @@
   <depends>gvf_module.xml</depends>
 
   <header>
-    <file name="vor.h"/>
+    <file name="voronoi.h"/>
   </header>
 
-  <init fun="vor_init()"/>
+  <init fun="voronoi_init()"/>
 
   <datalink message="VOR_INFO" fun="parseVorInfo()"/>
 
   <makefile firmware="fixedwing">
-    <file name="vor.c"/>
+    <file name="voronoi.c"/>
   </makefile>
 
 </module>
