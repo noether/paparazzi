@@ -314,7 +314,11 @@
       <field name="temp" type="int8" unit="deg"/>
     </message>
 
-    <!-- 38 is free -->
+    <message name="VORONOI" id="37">
+      <description>Telemetry message for monitoring the status of the Voronoi area coverage algorithm.</description>
+      <field name="xc" type="float" unit="m"> X coordinate of the waypoint</field>
+      <field name="yc" type="float" unit="m"> Y coordinate of the waypoint</field>
+    </message>
 
     <message name="DRAGSPEED" id="38">
       <description>
@@ -2581,6 +2585,13 @@
       <field name="ac_id" type="uint8">ID of the table's aircraft to be updated</field>
       <field name="msg_type" type="uint8" values="P_AE|P_BE|SIG"/>
       <field name="msg_data" type="uint8[]"/>
+    </message>
+
+    <message name="VOR_GCS_AIR" id="160" link="forwarded">
+      <description>Send the new coordinates (calculated in the Python script) from the GCS to the aircraft.</description>
+      <field name="ac_id" type="uint8">ID of the table's aircraft to be updated</field>
+      <field name="xc" type="float" unit="m">X coordinate</field>
+      <field name="yc" type="float" unit="m">Y coordinate</field>
     </message>
 
   </msg_class>
