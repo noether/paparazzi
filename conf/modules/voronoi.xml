@@ -15,6 +15,7 @@
     <dl_settings>
       <dl_settings NAME="DCF">
         <dl_settings NAME="Control">
+			<dl_setting MAX="1" MIN="0" STEP="1" VAR="vor_control.centralized" shortname = "Cen/Dis" param="VOR_CENTRALIZED"/>
           <dl_setting MAX="200" MIN="0" STEP="1" VAR="vor_control.radius" shortname = "Radius" param="VOR_RADIUS"/>
           <dl_setting MAX="5000" MIN="0" STEP="1" VAR="vor_control.timeout" shortname = "Timeout" param="VOR_TIMEOUT"/>
           <dl_setting MAX="1000" MIN="0" STEP="1" VAR="vor_control.broadtime" shortname = "Broadcasting" param="VOR_BROAD_TIME"/>
