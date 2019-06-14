@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017  Hector Garcia de Marina
+ * Copyright (C) 2019  Hector Garcia de Marina
  *
  * This file is part of paparazzi.
  *
@@ -27,6 +27,12 @@
 #ifndef VOR_H
 #define VOR_H
 
+/*! Default number of max neighbors per aircraft */
+#ifndef VOR_MAX_NEIGHBORS
+#define VOR_MAX_NEIGHBORS 10
+#endif
+
+
 #include "std.h"
 
 struct vor_con {
@@ -34,20 +40,23 @@ struct vor_con {
   float radius;
   uint16_t timeout;
   uint16_t broadtime;
+  float xc;
+  float yc;
 };
 
 extern struct vor_con vor_control;
 
 struct vor_tab {
-  int16_t tableNei[DCF_MAX_NEIGHBORS][16];
+  int16_t tableNei[VOR_MAX_NEIGHBORS][4];
 };
 
 extern struct vor_tab vor_tables;
 
-extern void vor_init(void);
+extern void voronoi_init(void);
 extern bool voronoi_main_loop(void);
-extern void send_info_to_nei(void);
+extern void send_vorinfo_to_nei(void);
 
-extern void parseVorInfo(void);
+extern void parseVorfromGCS(void);
+
 
 #endif // VOR_H

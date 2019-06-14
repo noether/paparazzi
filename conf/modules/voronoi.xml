@@ -1,21 +1,22 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="voronoi_area_coverage" dir="voronoi">
+<module name="voronoi" dir="voronoi">
   <doc>
     <description>Distributed/Centralized algorithm for covering areas with a team of vehicles
     </description>
     <section name="Parameters" prefix="VOR_">
+      <define name="MAX_NEIGHBORS" value="10" description="Maximum number of neighbors"/>
       <define name="RADIUS" value="80" description="Radius of the default radius for the circle"/>
       <define name="TIMEOUT" value="1500" description="After this time (in ms) if we do not have any msg from a neighborh, we ignore it"/>
 	  <define name="BROAD_TIME" value="200" description="Time in ms for transmiting information to your neighbors/GCS"/>
     </section>
   </doc>
 
-  <settings name="DCF">
+  <settings name="VOR">
     <dl_settings>
-      <dl_settings NAME="DCF">
+      <dl_settings NAME="VOR">
         <dl_settings NAME="Control">
-			<dl_setting MAX="1" MIN="0" STEP="1" VAR="vor_control.centralized" shortname = "Cen/Dis" param="VOR_CENTRALIZED"/>
+          <dl_setting MAX="1" MIN="0" STEP="1" VAR="vor_control.centralized" shortname = "Cen/Dis" param="VOR_CENTRALIZED"/>
           <dl_setting MAX="200" MIN="0" STEP="1" VAR="vor_control.radius" shortname = "Radius" param="VOR_RADIUS"/>
           <dl_setting MAX="5000" MIN="0" STEP="1" VAR="vor_control.timeout" shortname = "Timeout" param="VOR_TIMEOUT"/>
           <dl_setting MAX="1000" MIN="0" STEP="1" VAR="vor_control.broadtime" shortname = "Broadcasting" param="VOR_BROAD_TIME"/>
@@ -32,7 +33,7 @@
 
   <init fun="voronoi_init()"/>
 
-  <datalink message="VOR_INFO" fun="parseVorInfo()"/>
+  <datalink message="VOR_GCS_AIR" fun="parseVorfromGCS()"/>
 
   <makefile firmware="fixedwing">
     <file name="voronoi.c"/>

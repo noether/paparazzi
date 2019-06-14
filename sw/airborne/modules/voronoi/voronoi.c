@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Hector Garcia de Marina
+ * Copyright (C) 2019 Hector Garcia de Marina
  *
  * This file is part of paparazzi.
  *
@@ -22,7 +22,7 @@
 #include <math.h>
 #include <std.h>
 
-#include "modules/vor/voronoi.h"
+#include "modules/voronoi/voronoi.h"
 #include "subsystems/datalink/datalink.h" // dl_buffer
 #include "subsystems/datalink/telemetry.h"
 #include "subsystems/navigation/common_nav.h"
@@ -32,10 +32,8 @@
 #if PERIODIC_TELEMETRY
 static void send_voronoi(struct transport_tx *trans, struct link_device *dev)
 {
-
-// We will see what to send to the GCS
-// if (vor_control.centralized)
-//  pprz_msg_send_VORONOI(trans, dev, AC_ID, 4 * DCF_MAX_NEIGHBORS, &(dcf_tables.tableNei[0][0]), DCF_MAX_NEIGHBORS, dcf_tables.error_sigma);
+ if (vor_control.centralized)
+    pprz_msg_send_VORONOI(trans, dev, AC_ID, &vor_control.xc, &vor_control.yc);
 }
 #endif // PERIODIC TELEMETRY
 
@@ -57,22 +55,21 @@ static void send_voronoi(struct transport_tx *trans, struct link_device *dev)
 #define VOR_BROADTIME 200
 #endif
 
-struct vor_con vor_control = {VOR_CENTRALIZED, VOR_RADIUS, VOR_TIMEOUT, VOR_BROADTIME};
+struct vor_con vor_control = {VOR_CENTRALIZED, VOR_RADIUS, VOR_TIMEOUT, VOR_BROADTIME, 0, 0};
 struct vor_tab vor_tables;
 
 uint32_t last_transmision = 0;
 
-void vor_init(void)
+void voronoi_init(void)
 {
 // We need to init the table of neighbors
-//  for (int i = 0; i < _MAX_NEIGHBORS; i++) {
+//  for (int i = 0; i < DCF_MAX_NEIGHBORS; i++) {
 //    dcf_tables.tableNei[i][0] = -1;
 //    dcf_tables.error_sigma[i] = 0;
 //  }
 
-// Once the message(s) is written in PprLink, we can uncomment this
 #if PERIODIC_TELEMETRY
-//  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_VOR, send_voronoi);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_VORONOI, send_voronoi);
 #endif
 }
 
@@ -114,14 +111,14 @@ bool voronoi_main_loop(void)
   // gvf_ellipse_XY(xc, yc, dcf_control.radius + u, dcf_control.radius + u, 0);
 
   if ((now - last_transmision > vor_control.broadtime) && (autopilot_get_mode() == AP_MODE_AUTO2)) {
-    send_info_to_nei();
+    send_vorinfo_to_nei();
     last_transmision = now;
   }
 
   return true;
 }
 
-void send_info_to_nei(void)
+void send_vorinfo_to_nei(void)
 {
   //struct pprzlink_msg msg;
 
@@ -134,6 +131,15 @@ void send_info_to_nei(void)
     //  msg.component_id = 0;
     //  pprzlink_msg_send_DCF_THETA(&msg, &(dcf_control.theta));
   //  }
+}
+
+void parseVorfromGCS(void)
+{
+  if(vor_control.centralized)
+  {
+    vor_control.xc = DL_VOR_GCS_AIR_xc(dl_buffer);
+    vor_control.yc = DL_VOR_GCS_AIR_yc(dl_buffer);
+  }
 }
 
 // I leave this here in case we need to look how to parse a message into a table
