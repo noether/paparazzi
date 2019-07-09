@@ -1,0 +1,19 @@
+Map:
+  coord1: [0, 0]
+  coord2: [120, 0]
+  coord3: [120, 120]
+  coord4: [0, 120]
+
+Sites:
+  coord1: [4, 7]
+  coord2: [3, 4]
+  #coord3: [5, 6]
+  #coord4: [24, 30]
+  #coord5: [12, 20]
+  #coord6: [15, 3]
+  #coord7: [34, 25]
+  #coord8: [2, 13]
+  #coord9: [20, 3]
+  #coord10: [34, 32]
+
+Function: uniform
