@@ -33,6 +33,7 @@
 
   <modules> 
     <module name="gvf_module"/>
+    <module name="voronoi"/>
   </modules>
 
   <blocks>
@@ -58,6 +59,9 @@
       <call_once fun="NavVerticalAutoThrottleMode(0.0)"/>
       <call_once fun="NavVerticalAltitudeMode(flight_altitude, 0.0)"/>
       <call fun="gvf_ellipse_wp(WP_STDBY, nav_radius, nav_radius, 0)"/>
+    </block>
+    <block name="voronoi">
+      <call fun="voronoi_main_loop()"/>
     </block>
     <block name="ellipse">
       <call fun="gvf_ellipse_wp(WP_ELLIPSE, gvf_ellipse_par.a, gvf_ellipse_par.b, gvf_ellipse_par.alpha)"/>
